@@ -71,9 +71,9 @@ bodies = [
         "name": "SUN",
         "pos": np.array([0.0, 0.0, 25.0]),
         "radius": 3.0,
-        "mass": 45.0,
-        "well_depth": 18.0,
-        "soft": 4.5,
+        "mass": 90.0,
+        "well_depth": 45.0,  
+        "soft": 9.0,        
         "color": (255, 210, 80),
         "orbit_r": 0.0,
         "speed": 0.0,
@@ -83,9 +83,9 @@ bodies = [
         "name": "TERRA",
         "pos": np.array([18.0, 0.0, 25.0]),
         "radius": 1.1,
-        "mass": 14.0,
-        "well_depth": 6.5,
-        "soft": 2.2,
+        "mass": 20.0,
+        "well_depth": 18.0, 
+        "soft": 4.5,       
         "color": (90, 190, 255),
         "orbit_r": 18.0,
         "speed": 0.35,
@@ -95,9 +95,9 @@ bodies = [
         "name": "JOVE",
         "pos": np.array([34.0, 0.0, 25.0]),
         "radius": 1.8,
-        "mass": 26.0,
-        "well_depth": 11.0,
-        "soft": 3.0,
+        "mass": 40.0,
+        "well_depth": 30.0,  # Was 11.0
+        "soft": 6.5,         # Was 3.0
         "color": (255, 130, 90),
         "orbit_r": 34.0,
         "speed": 0.20,
@@ -231,13 +231,15 @@ def draw_mesh(vertices, edges, model_mat, view_mat, proj_mat, color, width=1, ma
 pg.event.set_grab(True)
 pg.mouse.set_visible(False)
 
-HOVER_OFFSET = 0.65 
+HOVER_OFFSET = 1 
 yaw, pitch = 0.0, 0.35
 ship_pos = np.array([0.0, grid_height_at(0.0, 0.0) + HOVER_OFFSET, 0.0])
 vel = np.array([0.0, 0.0, 0.0])
 sensitivity = 0.003
 proj_mat = p(70)
 identity_mat = np.eye(4)
+trail = []
+trail_timer = 0.0
 runig = True
 
 while runig:
@@ -264,7 +266,7 @@ while runig:
     right = np.array([np.cos(yaw), 0.0, -np.sin(yaw)])
 
     keys = pg.key.get_pressed()
-    thrust = 12.0
+    thrust = 22.0
     if keys[pg.K_w]:
         vel += forward * thrust * dt
     if keys[pg.K_s]:
@@ -274,7 +276,7 @@ while runig:
     if keys[pg.K_a]:
         vel -= right * thrust * dt
 
-    G = 28.0
+    G = 45.0  
     for b in bodies:
         diff = np.array([b["pos"][0] - ship_pos[0], 0.0, b["pos"][2] - ship_pos[2]])
         dist_sq = np.dot(diff, diff)
@@ -318,6 +320,7 @@ while runig:
     world_grid[:, 2] += snap_z
     world_grid[:, 1] = -2.0
 
+    # 1. Restored the gravity well bending loop!
     for b in bodies:
         dx = world_grid[:, 0] - b["pos"][0]
         dz = world_grid[:, 2] - b["pos"][2]
@@ -329,9 +332,39 @@ while runig:
 
     draw_mesh(world_grid, grid_edjs, identity_mat, view_mat, proj_mat, (80, 120, 175), 1, max_dist=38.0)
 
+    # 2. Single planet loop AFTER scr.fill, seated inside the wells
     for b in bodies:
         r = b["radius"]
-        draw_mesh(sphere_verts, sphere_edges, m(b["pos"], (0, t_sec * 0.4, 0.2), (r, r, r)), view_mat, proj_mat, b["color"], 2, max_dist=75.0)
+        ground_y = grid_height_at(b["pos"][0], b["pos"][2]) + r * 0.5
+        draw_pos = np.array([b["pos"][0], ground_y+3, b["pos"][2]])
+        draw_mesh(sphere_verts, sphere_edges, m(draw_pos, (0, t_sec * 0.4, 0.2), (r, r, r)), view_mat, proj_mat, b["color"], 2, max_dist=75.0)
+
+    # 3. Trail timer properly unindented outside the planet loop
+    trail_timer += dt
+    if trail_timer >= 0.03:
+        trail.append([ship_pos[0], ship_pos[1], ship_pos[2], 1.0])
+        if len(trail) > 60:
+            trail.pop(0)
+        trail_timer = 0.0
+
+    if len(trail) > 1:
+        pts = np.array(trail)
+        clip = pts @ view_mat @ proj_mat
+        bg_col = np.array([4, 6, 12], dtype=float)
+        trail_col = np.array([120, 255, 190], dtype=float)
+        num_segs = len(pts) - 1
+
+        for i in range(num_segs):
+            p1, p2 = clip[i], clip[i + 1]
+            if p1[3] >= 0.1 and p2[3] >= 0.1:
+                ndc1 = p1[:2] / p1[3]
+                ndc2 = p2[:2] / p2[3]
+                x1, y1 = int((ndc1[0] + 1) * 0.5 * wid), int((1 - ndc1[1]) * 0.5 * hig)
+                x2, y2 = int((ndc2[0] + 1) * 0.5 * wid), int((1 - ndc2[1]) * 0.5 * hig)
+
+                fade = (i + 1) / num_segs
+                col = (bg_col + (trail_col - bg_col) * (fade ** 1.5)).astype(int)
+                pg.draw.line(scr, col, (x1, y1), (x2, y2), 2)
 
     ship_mat = m(ship_pos, (slope_pitch, yaw, bank_roll), (1.0, 1.0, 1.0))
     draw_mesh(ship_verts, ship_edges, ship_mat, view_mat, proj_mat, (120, 255, 190), 2, max_dist=50.0)
