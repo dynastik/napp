@@ -1,5 +1,6 @@
 import numpy as np
 import pygame as pg
+import itertools
 
 pg.init()
 wid,hig=1000,750
@@ -7,6 +8,12 @@ scr=pg.display.set_mode((wid, hig))
 pg.display.set_caption('gem')
 
 clk=pg.time.Clock()
+
+verts=np.array(list(itertools.product([-0.5, 0.5], repeat=3)))
+edjs=[[i, j]
+    for i in range(len(verts))
+    for j in range(i + 1, len(verts))
+    if np.sum(verts[i] != verts[j]) == 1]
 
 def m(trn,rot,scl):
     tx,ty,tz=trn
@@ -40,6 +47,10 @@ def p(fov):
     ar=(wid/hig)
     fr,nr=0.1,100
     return np.array([[f/ar,0,0,0],[0,f,0,0],[0,0,fr/(fr-nr),1],[0,0,-(fr*nr)/(fr-nr),1]],dtype=float)
+
+def rendr():
+    trix=p(70)@v((0,0,0),(0,0,0))@m((0,0,0),(0,0,0),(1,1,1))@verts
+    fnl=trix[:,3]
 
 runig=True
 while runig:
