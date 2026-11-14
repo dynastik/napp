@@ -43,7 +43,6 @@ def make_ship():
     ], dtype=int)
     return verts, edges
 
-# 3. Local Spacetime Grid
 def make_grid(size=38, step=2.0, sub_divs=14):
     grdvrts = []
     grid_edjs = []
@@ -96,8 +95,8 @@ bodies = [
         "pos": np.array([34.0, 0.0, 25.0]),
         "radius": 1.8,
         "mass": 40.0,
-        "well_depth": 30.0,  # Was 11.0
-        "soft": 6.5,         # Was 3.0
+        "well_depth": 30.0, 
+        "soft": 6.5,       
         "color": (255, 130, 90),
         "orbit_r": 34.0,
         "speed": 0.20,
@@ -320,7 +319,6 @@ while runig:
     world_grid[:, 2] += snap_z
     world_grid[:, 1] = -2.0
 
-    # 1. Restored the gravity well bending loop!
     for b in bodies:
         dx = world_grid[:, 0] - b["pos"][0]
         dz = world_grid[:, 2] - b["pos"][2]
@@ -332,14 +330,12 @@ while runig:
 
     draw_mesh(world_grid, grid_edjs, identity_mat, view_mat, proj_mat, (80, 120, 175), 1, max_dist=38.0)
 
-    # 2. Single planet loop AFTER scr.fill, seated inside the wells
     for b in bodies:
         r = b["radius"]
         ground_y = grid_height_at(b["pos"][0], b["pos"][2]) + r * 0.5
         draw_pos = np.array([b["pos"][0], ground_y+3, b["pos"][2]])
         draw_mesh(sphere_verts, sphere_edges, m(draw_pos, (0, t_sec * 0.4, 0.2), (r, r, r)), view_mat, proj_mat, b["color"], 2, max_dist=75.0)
 
-    # 3. Trail timer properly unindented outside the planet loop
     trail_timer += dt
     if trail_timer >= 0.03:
         trail.append([ship_pos[0], ship_pos[1], ship_pos[2], 1.0])
