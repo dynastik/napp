@@ -10,7 +10,11 @@ clk=pg.time.Clock()
 
 runig=True
 while runig:
-    clk.tick(60)/1000
+    dt=clk.tick(60)/1000
     for evnt in pg.event.get():
         if evnt == pg.QUIT:
             pg.quit()
+    scr.fill((0,0,0))
+    pg.display.flip()
+
+pg.quit()
