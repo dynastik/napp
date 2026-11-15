@@ -1,6 +1,7 @@
 # napp
 //no asset (jk) plain python
 
--wasd+mouse controlled
--has its own vertex shader
--only numpy and pygame (random too but)
+- wasd+mouse controlled
+- has its own vertex shader
+- only numpy and pygame (random too but still)
+- cool themes
