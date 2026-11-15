@@ -8,6 +8,13 @@ scr = pg.display.set_mode((wid, hig))
 pg.display.set_caption('gem')
 clk = pg.time.Clock()
 
+try:
+    _raw_strt = pg.image.load("heheehe.png").convert_alpha()
+    strt = pg.transform.smoothscale(_raw_strt, (wid, hig))
+except Exception:
+    strt = pg.Surface((wid, hig))
+    strt.fill((0, 0, 0))
+
 
 def load_font(names, size, bold=False):
     avail = set(pg.font.get_fonts())
@@ -22,104 +29,25 @@ FONTS = {
     "default": (
         load_font(["consolas", "dejavusansmono", "monospace"], 16),
         load_font(["consolas", "dejavusansmono", "monospace"], 22),
-        load_font(["consolas", "dejavusansmono", "monospace"], 38, bold=True),
+        load_font(["consolas", "dejavusansmono", "monospace"], 36, bold=True),
     ),
     "glitch": (
         load_font(["fixedsys", "terminal", "couriernew", "lucidaconsole", "dejavusansmono"], 16, bold=True),
         load_font(["fixedsys", "terminal", "couriernew", "lucidaconsole", "dejavusansmono"], 22, bold=True),
-        load_font(["fixedsys", "terminal", "couriernew", "lucidaconsole", "dejavusansmono"], 36, bold=True),
+        load_font(["fixedsys", "terminal", "couriernew", "lucidaconsole", "dejavusansmono"], 34, bold=True),
     ),
     "paper": (
         load_font(["georgia", "cambria", "timesnewroman", "dejavuserif", "consolas"], 16),
         load_font(["georgia", "cambria", "timesnewroman", "dejavuserif", "consolas"], 22),
-        load_font(["georgia", "cambria", "timesnewroman", "dejavuserif", "consolas"], 36, bold=True),
+        load_font(["georgia", "cambria", "timesnewroman", "dejavuserif", "consolas"], 34, bold=True),
     ),
 }
 
+SCANLINE_SURF = pg.Surface((wid, hig), pg.SRCALPHA)
+for _y in range(0, hig, 4):
+    pg.draw.line(SCANLINE_SURF, (0, 0, 0, 65), (0, _y), (wid, _y), 1)
+
 THEMES = {
-    "default": {
-        "label": "COMET EXPRESS (DEFAULT)",
-        "font_key": "default",
-        "bg": (4, 6, 12),
-        "grid": (80, 120, 175),
-        "ship": (120, 255, 190),
-        "trail": (120, 255, 190),
-        "accent": (90, 255, 255),
-        "accent2": (120, 255, 190),
-        "warn": (255, 230, 120),
-        "text": (180, 220, 255),
-        "text_dim": (140, 160, 190),
-        "panel_bg": (6, 10, 20, 220),
-        "panel_text": (200, 225, 255),
-        "menu_bg": (10, 16, 30),
-        "btn_bg": (14, 22, 38),
-        "btn_sel": (22, 45, 68),
-        "btn_border": (55, 85, 115),
-        "fog_explored": (10, 16, 30),
-        "fog_unexplored": (46, 54, 72),
-        "map_star": (255, 210, 80),
-        "map_hole": (170, 90, 255),
-        "hole_core": (170, 90, 255),
-        "hole_ring1": (255, 170, 80),
-        "hole_ring2": (255, 120, 80),
-        "relay_beacon": (255, 255, 255),
-        "star_prefix": "SOL",
-        "hole_prefix": "BH",
-        "star_word": "star",
-        "planet_word": "planet",
-        "spaghetti_msg": "SPAGHETTIFIED - respawned at last safe point (+15s)",
-        "menu_title": "COMET EXPRESS",
-        "menu_sub": "SELECT FLIGHT PROTOCOL",
-        "intro": (
-            "Welcome to COMET EXPRESS, courier! You have one ship, one crate, and 8 customers who have been "
-            "waiting WAY too long. Find each one, land softly, and collect your thanks. "
-            "Dark dips in the map are black holes - they eat packages AND couriers. [SPACE to close]"
-        ),
-        "free_intro": (
-            "FREE ROAM MODE: A newly generated galaxy awaits! Explore uncharted systems, "
-            "slingshot around gravity wells, and land on any planet you like. [SPACE to close]"
-        ),
-        "cargos": [
-            "a lukewarm pizza", "123 rubber ducks", "one mystery crate", "a birthday cake",
-            "a very grumpy cat", "a mountain of socks", "a tiny trophy", "the GOLDEN package"
-        ],
-        "fragments": [
-            "Finally, pizza! I ordered this 40 years ago. I'm not even mad. Okay, a little.",
-            "Rubber ducks?! I asked for rubber TIRES. ...Eh, keep them coming, they're adorable.",
-            "The crate said DO NOT OPEN. I opened it. It was more socks. Great.",
-            "A cake! It's my birthday! It was also my birthday last time you were late. Hmm.",
-            "The cat knocked over my beacon, then sat on it. We've elected it mayor.",
-            "SOCKS! The black holes keep eating mine. Please tell them to stop.",
-            "A trophy for 'Best Courier'? I didn't order this... I think it's for you.",
-            "Last delivery! The whole planet is cheering. You've earned this big shiny button.",
-        ],
-        "guild": [
-            "DISPATCH: Nice landing! Next up: 123 rubber ducks. Don't ask.",
-            "DISPATCH: Next is a mystery crate. Do NOT open it. (Everyone opens it.)",
-            "DISPATCH: Birthday cake next. Keep it level, it's already a little crooked.",
-            "DISPATCH: Halfway! Next: a grumpy cat. Slow landings only.",
-            "DISPATCH: Mountain of socks next. Smells like victory. And feet.",
-            "DISPATCH: Tiny trophy next. Careful, it's shinier than you.",
-            "DISPATCH: Last one! The GOLDEN package. Don't dent it."
-        ],
-        "choice_title": "THE GOLDEN PACKAGE",
-        "choice_txt": (
-            "The last customer hands you a big, shiny red button. 'Your tip,' they say.\n\n"
-            "[1] Press the button.\n[2] Don't press it. Keep it as a souvenir."
-        ),
-        "end_good_title": "SOCK-ASTROPHE",
-        "end_good": (
-            "BOOM! Confetti everywhere. Every black hole burps out all the socks it ever swallowed, and the fog "
-            "blows away. Every customer gets their stuff, plus 40,000 extra socks.\n\n"
-            "ENDING: SOCK-ASTROPHE   (free flight - [R] restarts)"
-        ),
-        "end_quiet_title": "EMPLOYEE OF THE MILLENNIUM",
-        "end_quiet": (
-            "You tuck the button safely in your glovebox. Somewhere, a black hole feels a strange tingle... "
-            "but nothing happens. You cruise off as the greatest courier in the galaxy.\n\n"
-            "ENDING: EMPLOYEE OF THE MILLENNIUM   (free flight - [R] restarts)"
-        ),
-    },
     "glitch": {
         "label": "404: PARCEL NOT FOUND",
         "font_key": "glitch",
@@ -374,7 +302,7 @@ THEMES = {
     },
 }
 
-THEME_ORDER = ["default", "glitch", "blueprint", "parchment"]
+THEME_ORDER = ["glitch", "blueprint", "parchment"]
 theme_idx = 0
 theme_key = THEME_ORDER[theme_idx]
 T = THEMES[theme_key]
@@ -387,6 +315,7 @@ def set_theme(new_key):
     theme_idx = THEME_ORDER.index(new_key)
     T = THEMES[theme_key]
     font, big_font, title_font = FONTS[T["font_key"]]
+
     star_n = 0
     hole_n = 0
     cur_star_name = ""
@@ -403,9 +332,25 @@ def set_theme(new_key):
         elif b["kind"] == "planet":
             b["name"] = f"{cur_star_name}{'bcde'[planet_sub % 4]}"
             planet_sub += 1
+
     if mission and mission.get("target") is not None:
         cargos = T["cargos"]
         mission["cargo"] = cargos[min(mi, len(cargos) - 1)]
+
+    if story is not None:
+        if delivered == 0 and ending == "none":
+            if game_mode == "freeroam":
+                story["title"] = "FREE ROAM"
+                story["text"] = T["free_intro"]
+            else:
+                story["title"] = T["menu_title"]
+                story["text"] = T["intro"]
+        elif ending == "good":
+            story["title"] = T["end_good_title"]
+            story["text"] = T["end_good"]
+        elif ending == "quiet":
+            story["title"] = T["end_quiet_title"]
+            story["text"] = T["end_quiet"]
 
 
 HALF = 1600.0
@@ -746,6 +691,7 @@ def reset_world(seed_):
     vel = np.zeros(3)
     trail = []
     mode, land, cooldown = "fly", None, 0.0
+    bank_roll = 0.0
     disc = np.zeros(len(bodies), dtype=bool)
     explored = np.zeros((FOG_N, FOG_N), dtype=bool)
     scan_r = SCAN_BASE
@@ -798,7 +744,7 @@ story, log, ending, delivered, show_log = None, [], "none", 0, False
 reset_world(FIXED_SEED)
 story = None
 set_mouse_capture(False)
-yaw, pitch = 0.0, 0.35
+yaw, pitch, bank_roll = 0.0, 0.35, 0.0
 sensitivity = 0.003
 proj_mat = p(70)
 identity_mat = np.eye(4)
@@ -990,18 +936,18 @@ def draw_minimap():
     pg.draw.circle(scr, T["accent2"], clamp_to_hex(rx + px, ry + py, cx, cy, HEX_RAD - 3), 3)
 
 
-def apply_glitch_fx(hole_proximity, t_sec):
+def apply_glitch_fx(hole_proximity):
     if theme_key != "glitch":
         return
-    for y in range(0, hig, 4):
-        pg.draw.line(scr, (0, 14, 4), (0, y), (wid, y), 1)
+    scr.blit(SCANLINE_SURF, (0, 0))
     if hole_proximity > 0.0:
         if random.random() < 0.25 + 0.55 * hole_proximity:
             strips = 1 + int(hole_proximity * 5)
+            max_shift = int(12 + 30 * hole_proximity)
             for _ in range(strips):
-                sy = random.randint(0, hig - 24)
                 sh = random.randint(4, 18)
-                shift = random.randint(-int(12 + 30 * hole_proximity), int(12 + 30 * hole_proximity))
+                sy = random.randint(0, hig - sh)
+                shift = random.randint(-max_shift, max_shift)
                 row = scr.subsurface((0, sy, wid, sh)).copy()
                 scr.blit(row, (shift, sy))
         if random.random() < 0.12 * hole_proximity:
@@ -1053,23 +999,32 @@ def draw_menu_overlay():
     bg_r, bg_g, bg_b = T["bg"]
     overlay.fill((bg_r, bg_g, bg_b, 195))
     scr.blit(overlay, (0, 0))
+
     items = get_menu_items()
-    box_w = 600
-    box_h = 135 + len(items) * 52
-    bx, by = (wid - box_w) // 2, (hig - box_h) // 2
+    n_items = len(items)
+    btn_h = 42 if n_items <= 4 else 38
+    btn_gap = 6
+    header_h = 84
+    footer_h = 30
+    box_w = 620
+    box_h = header_h + n_items * (btn_h + btn_gap) - btn_gap + footer_h
+    bx = (wid - box_w) // 2
+    by = max(8, (hig - box_h) // 2)
+
     pg.draw.rect(scr, T["menu_bg"], (bx, by, box_w, box_h))
     pg.draw.rect(scr, T["accent"], (bx, by, box_w, box_h), 2)
+
     heading = "SYSTEM PAUSED" if game_state == "paused" else T["menu_title"]
-    sub = (f"ACTIVE MODE: {game_mode.upper()}" if game_state == "paused"
-           else T["menu_sub"])
+    sub = f"ACTIVE MODE: {game_mode.upper()}" if game_state == "paused" else T["menu_sub"]
     t_surf = title_font.render(heading, True, T["accent"])
     s_surf = font.render(sub, True, T["text"])
-    scr.blit(t_surf, (wid // 2 - t_surf.get_width() // 2, by + 18))
-    scr.blit(s_surf, (wid // 2 - s_surf.get_width() // 2, by + 62))
+    scr.blit(t_surf, (wid // 2 - t_surf.get_width() // 2, by + 12))
+    scr.blit(s_surf, (wid // 2 - s_surf.get_width() // 2, by + 52))
+
     btn_rects = []
-    start_y = by + 96
+    start_y = by + header_h
     for idx, (label, desc) in enumerate(items):
-        rect = pg.Rect(bx + 32, start_y + idx * 52, box_w - 64, 44)
+        rect = pg.Rect(bx + 28, start_y + idx * (btn_h + btn_gap), box_w - 56, btn_h)
         btn_rects.append((rect, label, idx))
         selected = (idx == menu_idx)
         bg = T["btn_sel"] if selected else T["btn_bg"]
@@ -1079,9 +1034,10 @@ def draw_menu_overlay():
         prefix = "> " if selected else "  "
         disp_label = f"THEME: < {T['label']} >" if label == "THEME" else label
         l_col = T["accent2"] if selected else T["text"]
-        scr.blit(big_font.render(prefix + disp_label, True, l_col), (rect.x + 12, rect.y + 3))
-        scr.blit(font.render(desc, True, T["text_dim"]), (rect.x + 34, rect.y + 25))
-    hint = "UP/DOWN or MOUSE to select  |  LEFT/RIGHT theme  |  ENTER/CLICK confirm"
+        scr.blit(big_font.render(prefix + disp_label, True, l_col), (rect.x + 10, rect.y + 1))
+        scr.blit(font.render(desc, True, T["text_dim"]), (rect.x + 32, rect.y + btn_h - 19))
+
+    hint = "UP/DOWN or MOUSE select  |  LEFT/RIGHT theme  |  ENTER/CLICK confirm"
     if game_state == "paused":
         hint += "  |  ESC resume"
     h_surf = font.render(hint, True, T["text_dim"])
@@ -1090,13 +1046,19 @@ def draw_menu_overlay():
 
 
 btn_rects = []
+sttd=True
 while runig:
     dt = min(clk.tick(60) / 1000.0, 0.05)
     t_sec = pg.time.get_ticks() * 0.001
     for evnt in pg.event.get():
         if evnt.type == pg.QUIT:
             runig = False
-        elif game_state in ("menu", "paused"):
+        elif sttd and (
+            (evnt.type == pg.KEYDOWN and evnt.key in (pg.K_RETURN, pg.K_SPACE, pg.K_ESCAPE))
+            or (evnt.type == pg.MOUSEBUTTONDOWN and evnt.button == 1)
+        ):
+            sttd = False
+        elif game_state in ("menu", "paused") and not sttd:
             items = get_menu_items()
             if evnt.type == pg.MOUSEMOTION:
                 for rect, _, idx in btn_rects:
@@ -1199,11 +1161,11 @@ while runig:
                     if np.linalg.norm(vel - bodies[i]["vel"]) < DOCK_SPEED:
                         C = BC[i]
                         A = ship_pos - C
-                        rad0 = np.linalg.norm(A)
+                        rad0 = max(float(np.linalg.norm(A)), 1e-4)
                         land = dict(
                             idx=int(i), t0=t_sec, timer=0.0, rad0=rad0,
                             az0=np.arctan2(A[2], A[0]),
-                            el0=np.arcsin(np.clip(A[1] / rad0, -1, 1)),
+                            el0=np.arcsin(np.clip(A[1] / rad0, -1.0, 1.0)),
                             head0=forward.copy()
                         )
                         mode = "landing"
@@ -1241,13 +1203,20 @@ while runig:
     h_ahead = grid_height_at(ship_pos[0] + forward[0] * eps, ship_pos[2] + forward[2] * eps)
     h_behind = grid_height_at(ship_pos[0] - forward[0] * eps, ship_pos[2] - forward[2] * eps)
     slope_pitch = -np.arctan2(h_ahead - h_behind, 2.0 * eps)
-    bank_roll = 0.0
+    target_roll = 0.0
     if game_state == "play" and mode == "fly":
         if keys[pg.K_a]:
-            bank_roll += 0.35
+            target_roll += 0.45
         if keys[pg.K_d]:
-            bank_roll -= 0.35
-    FM = m((0, 0, 0), (slope_pitch, yaw, bank_roll), (1, 1, 1))
+            target_roll -= 0.45
+    bank_roll += (target_roll - bank_roll) * min(1.0, 10.0 * dt)
+    _cr, _sr = np.cos(bank_roll), np.sin(bank_roll)
+    _cp, _sp = np.cos(slope_pitch), np.sin(slope_pitch)
+    _cy, _sy = np.cos(yaw), np.sin(yaw)
+    _ZR = np.array([[_cr, _sr, 0, 0], [-_sr, _cr, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]], dtype=float)
+    _XR = np.array([[1, 0, 0, 0], [0, _cp, _sp, 0], [0, -_sp, _cp, 0], [0, 0, 0, 1]], dtype=float)
+    _YR = np.array([[_cy, 0, -_sy, 0], [0, 1, 0, 0], [_sy, 0, _cy, 0], [0, 0, 0, 1]], dtype=float)
+    FM = _ZR @ _XR @ _YR
     fly_b = (FM[0, :3].copy(), FM[1, :3].copy(), FM[2, :3].copy())
     ship_b = fly_b
 
@@ -1493,11 +1462,17 @@ while runig:
         elif story is not None:
             draw_panel(story["title"], story["text"])
 
-    apply_glitch_fx(hole_proximity, t_sec)
+    apply_glitch_fx(hole_proximity)
 
     if game_state in ("menu", "paused"):
         btn_rects = draw_menu_overlay()
 
+    if sttd:
+        scr.blit(strt, (0, 0))
+        if int(t_sec * 2) % 2 == 0:
+            _hint = font.render("[ PRESS ENTER / SPACE OR CLICK TO START ]", True, (220, 220, 220))
+            scr.blit(_hint, ((wid - _hint.get_width()) // 2, hig - 36))
+
     pg.display.flip()
 
-pg.quit()
+pg.quit() 
