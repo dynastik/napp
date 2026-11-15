@@ -1,8 +1,18 @@
 import random
+from pathlib import Path
+
 import numpy as np
 import pygame as pg
 
 pg.init()
+sound_dir = Path(__file__).resolve().parent
+glitch_sfx = pg.mixer.Sound(str(sound_dir / "glitch.wav"))
+paper_crumple_sfx = pg.mixer.Sound(str(sound_dir / "papercrumple.wav"))
+paper_uncrumple_sfx = pg.mixer.Sound(str(sound_dir / "paperunscrunch.wav"))
+pencilwrite_sfx = pg.mixer.Sound(str(sound_dir / "pencilwrite.wav"))
+glitch_channel = pg.mixer.Channel(0)
+respawn_channel = pg.mixer.Channel(1)
+spawn_channel = pg.mixer.Channel(2)
 wid, hig = 1000, 500
 scr = pg.display.set_mode((wid, hig))
 pg.display.set_caption('gem')
@@ -17,12 +27,12 @@ except Exception:
 
 
 def load_fnt(xk, vh, qV=False):
-    qJ = set(pg.fnt.get_fnts())
+    qJ = set(pg.font.get_fonts())
     for n in xk:
         key = n.lower().replace(" ", "")
         if key in qJ:
-            return pg.fnt.Sysfnt(n, vh, bold=qV)
-    return pg.fnt.Sysfnt(None, vh, bold=qV)
+            return pg.font.SysFont(n, vh, bold=qV)
+    return pg.font.SysFont(None, vh, bold=qV)
 
 
 zx = {
@@ -681,7 +691,7 @@ def new_mission():
 def reset_world(x5):
     global qU, vc, vel, vU, xW, xf, z3, zf
     global zm, zt, xY, mi, xO, xN, qs
-    global vx, log, zq, zj, ve
+    global vx, log, zq, zj, ve, qL
     qU = gen_galaxy(x5)
     rebuild_static()
     refresh_positions()
@@ -709,6 +719,8 @@ def reset_world(x5):
     else:
         new_mission()
         push_story(T["menu_title"], T["intro"], 16.0)
+    if vN in ("blueprint", "parchment"):
+        spawn_channel.play(pencilwrite_sfx)
 
 
 def start_mode(x7):
@@ -1181,6 +1193,11 @@ while xU:
                 vc[2] = BP[i][2] + xp[2] * qa[i]
                 vel *= 0.85
             if np.any(zo < HOR):
+                if vN in ("blueprint", "parchment"):
+                    respawn_channel.play(paper_crumple_sfx)
+                    respawn_channel.queue(paper_uncrumple_sfx)
+                else:
+                    respawn_channel.play(paper_uncrumple_sfx)
                 vc[0], vc[2] = xW[0], xW[2]
                 vel[:] = 0.0
                 vU.clear()
@@ -1198,6 +1215,12 @@ while xU:
     zR = zo[qq]
     xd = float(zR.min()) if len(zR) else 9999.0
     zT = float(np.clip(1.0 - (xd - 10.0) / 140.0, 0.0, 1.0))
+    if zC == "play" and vN == "glitch" and zT > 0.0:
+        glitch_channel.set_volume(min(0.65, zT))
+        if not glitch_channel.get_busy():
+            glitch_channel.play(glitch_sfx)
+    else:
+        glitch_channel.stop()
 
     eps = 0.25
     zF = grid_height_at(vc[0] + zA[0] * eps, vc[2] + zA[2] * eps)
