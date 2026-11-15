@@ -1,3 +1,4 @@
+import asyncio
 import random
 from pathlib import Path
 
@@ -6,10 +7,10 @@ import pygame as pg
 
 pg.init()
 sound_dir = Path(__file__).resolve().parent
-glitch_sfx = pg.mixer.Sound(str(sound_dir / "glitch.wav"))
-paper_crumple_sfx = pg.mixer.Sound(str(sound_dir / "papercrumple.wav"))
-paper_uncrumple_sfx = pg.mixer.Sound(str(sound_dir / "paperunscrunch.wav"))
-pencilwrite_sfx = pg.mixer.Sound(str(sound_dir / "pencilwrite.wav"))
+glitch_sfx = pg.mixer.Sound(str(sound_dir / "glitch.ogg"))
+paper_crumple_sfx = pg.mixer.Sound(str(sound_dir / "papercrumple.ogg"))
+paper_uncrumple_sfx = pg.mixer.Sound(str(sound_dir / "paperunscrunch.ogg"))
+pencilwrite_sfx = pg.mixer.Sound(str(sound_dir / "pencilwrite.ogg"))
 glitch_channel = pg.mixer.Channel(0)
 respawn_channel = pg.mixer.Channel(1)
 spawn_channel = pg.mixer.Channel(2)
@@ -1059,443 +1060,450 @@ def draw_menu_overlay():
 
 q4 = []
 vA=True
-while xU:
-    dt = min(clk.tick(60) / 1000.0, 0.05)
-    vF = pg.time.get_ticks() * 0.001
-    for zr in pg.event.get():
-        if zr.type == pg.QUIT:
-            xU = False
-        elif vA and (
-            (zr.type == pg.KEYDOWN and zr.key in (pg.K_RETURN, pg.K_SPACE, pg.K_ESCAPE))
-            or (zr.type == pg.MOUSEBUTTONDOWN and zr.button == 1)
-        ):
-            vA = False
-        elif zC in ("menu", "paused") and not vA:
-            zX = get_menu_items()
-            if zr.type == pg.MOUSEMOTION:
-                for xJ, _, idx in q4:
-                    if xJ.collidepoint(zr.pos):
-                        xc = idx
-            elif zr.type == pg.MOUSEBUTTONDOWN and zr.button == 1:
-                for xJ, z2, idx in q4:
-                    if xJ.collidepoint(zr.pos):
-                        xc = idx
-                        execute_menu_option(z2)
-            elif zr.type == pg.KEYDOWN:
-                if zr.key in (pg.K_UP, pg.K_w):
-                    xc = (xc - 1) % len(zX)
-                elif zr.key in (pg.K_DOWN, pg.K_s):
-                    xc = (xc + 1) % len(zX)
-                elif zr.key in (pg.K_LEFT, pg.K_a):
-                    cycle_theme(-1)
-                elif zr.key in (pg.K_RIGHT, pg.K_d, pg.K_t):
-                    cycle_theme(1)
-                elif zr.key in (pg.K_RETURN, pg.K_SPACE):
-                    execute_menu_option(zX[xc][0])
-                elif zr.key == pg.K_ESCAPE and zC == "paused":
-                    zC = "play"
-                    set_mouse_capture(True)
-        elif zC == "play":
-            if zr.type == pg.MOUSEMOTION:
-                dx, dy = zr.rel
-                yaw += dx * x8
-                xA = np.clip(xA + dy * x8, 0.05, 1.35)
-            elif zr.type == pg.KEYDOWN:
-                if zr.key == pg.K_ESCAPE:
-                    zC = "paused"
-                    xc = 0
-                    set_mouse_capture(False)
-                elif zr.key == pg.K_t:
-                    cycle_theme(1)
-                    say(f"THEME: {T['label']}", 2.0)
-                elif zr.key == pg.K_r:
-                    x4 = qd if zB == "delivery" else random.randint(10000, 9999999)
-                    reset_world(x4)
-                    say("NEW GALAXY GENERATED" if zB == "freeroam" else "RESTARTED")
-                elif zr.key == pg.K_SPACE and zq in ("none", "good", "quiet"):
-                    vx = None
-                elif zr.key == pg.K_TAB:
-                    ve = not ve
-                elif zq == "choice" and zr.key in (pg.K_1, pg.K_2):
-                    if zr.key == pg.K_1:
-                        zq = "good"
-                        zm[:] = True
-                        zt[:] = True
-                        push_story(T["end_good_title"], T["end_good"], 40.0)
-                    else:
-                        zq = "quiet"
-                        push_story(T["end_quiet_title"], T["end_quiet"], 40.0)
+async def main():
+    global bg, mi, q4, q5, qL, qO, vA, vW, vc, ve, vel, vx, xA, xU, xW, xY, xc, xf, xh, yaw, z3, zC, zf, zj, zm, zq, zt
+    while xU:
+        dt = min(clk.tick(60) / 1000.0, 0.05)
+        vF = pg.time.get_ticks() * 0.001
+        for zr in pg.event.get():
+            if zr.type == pg.QUIT:
+                xU = False
+            elif vA and (
+                (zr.type == pg.KEYDOWN and zr.key in (pg.K_RETURN, pg.K_SPACE, pg.K_ESCAPE))
+                or (zr.type == pg.MOUSEBUTTONDOWN and zr.button == 1)
+            ):
+                vA = False
+            elif zC in ("menu", "paused") and not vA:
+                zX = get_menu_items()
+                if zr.type == pg.MOUSEMOTION:
+                    for xJ, _, idx in q4:
+                        if xJ.collidepoint(zr.pos):
+                            xc = idx
+                elif zr.type == pg.MOUSEBUTTONDOWN and zr.button == 1:
+                    for xJ, z2, idx in q4:
+                        if xJ.collidepoint(zr.pos):
+                            xc = idx
+                            execute_menu_option(z2)
+                elif zr.type == pg.KEYDOWN:
+                    if zr.key in (pg.K_UP, pg.K_w):
+                        xc = (xc - 1) % len(zX)
+                    elif zr.key in (pg.K_DOWN, pg.K_s):
+                        xc = (xc + 1) % len(zX)
+                    elif zr.key in (pg.K_LEFT, pg.K_a):
+                        cycle_theme(-1)
+                    elif zr.key in (pg.K_RIGHT, pg.K_d, pg.K_t):
+                        cycle_theme(1)
+                    elif zr.key in (pg.K_RETURN, pg.K_SPACE):
+                        execute_menu_option(zX[xc][0])
+                    elif zr.key == pg.K_ESCAPE and zC == "paused":
+                        zC = "play"
+                        set_mouse_capture(True)
+            elif zC == "play":
+                if zr.type == pg.MOUSEMOTION:
+                    dx, dy = zr.rel
+                    yaw += dx * x8
+                    xA = np.clip(xA + dy * x8, 0.05, 1.35)
+                elif zr.type == pg.KEYDOWN:
+                    if zr.key == pg.K_ESCAPE:
+                        zC = "paused"
+                        xc = 0
+                        set_mouse_capture(False)
+                    elif zr.key == pg.K_t:
+                        cycle_theme(1)
+                        say(f"THEME: {T['label']}", 2.0)
+                    elif zr.key == pg.K_r:
+                        x4 = qd if zB == "delivery" else random.randint(10000, 9999999)
+                        reset_world(x4)
+                        say("NEW GALAXY GENERATED" if zB == "freeroam" else "RESTARTED")
+                    elif zr.key == pg.K_SPACE and zq in ("none", "good", "quiet"):
+                        vx = None
+                    elif zr.key == pg.K_TAB:
+                        ve = not ve
+                    elif zq == "choice" and zr.key in (pg.K_1, pg.K_2):
+                        if zr.key == pg.K_1:
+                            zq = "good"
+                            zm[:] = True
+                            zt[:] = True
+                            push_story(T["end_good_title"], T["end_good"], 40.0)
+                        else:
+                            zq = "quiet"
+                            push_story(T["end_quiet_title"], T["end_quiet"], 40.0)
 
-    if zC == "menu":
-        yaw += 0.12 * dt
+        if zC == "menu":
+            yaw += 0.12 * dt
 
-    if zC in ("play", "menu"):
-        update_orbits(dt)
-        refresh_positions()
+        if zC in ("play", "menu"):
+            update_orbits(dt)
+            refresh_positions()
 
-    if zC == "play":
-        xe["t"] += dt
-        xh = max(0.0, xh - dt)
-        zf -= dt
-        if vx is not None and zq != "choice":
-            vx["t"] -= dt
-            if vx["t"] <= 0:
-                vx = None
-
-    zN = wells_height(BP[:, 0], BP[:, 2])
-    BC = BP.copy()
-    BC[:, 1] = zN + np.where(qq, 1.5, 1.0 + BRV * 0.4)
-
-    if zC == "play":
-        dxz = np.hypot(BP[:, 0] - vc[0], BP[:, 2] - vc[2])
-        zm |= dxz < xY * np.where(qs, 1.6, 1.0)
-        zt |= np.hypot(qf - vc[0], qg - vc[2]) < xY * 1.2
-        zA = np.array([np.sin(yaw), 0.0, np.cos(yaw)])
-        xQ = np.array([np.cos(yaw), 0.0, -np.sin(yaw)])
-        zZ = pg.key.get_pressed()
-        zl = BP - vc
-        zl[:, 1] = 0.0
-        d2 = (zl * zl).sum(axis=1)
-        zo = np.sqrt(d2) + 1e-6
-
-        if xf == "fly":
-            vP = 22.0
-            if zZ[pg.K_w]:
-                vel += zA * vP * dt
-            if zZ[pg.K_s]:
-                vel -= zA * vP * dt
-            if zZ[pg.K_d]:
-                vel += xQ * vP * dt
-            if zZ[pg.K_a]:
-                vel -= xQ * vP * dt
-            if zf <= 0:
-                for i in np.nonzero(qr & (zo < qa + 3.5))[0]:
-                    if np.linalg.norm(vel - qU[i]["vel"]) < qb:
-                        C = BC[i]
-                        A = vc - C
-                        xG = max(float(np.linalg.norm(A)), 1e-4)
-                        z3 = dict(
-                            idx=int(i), t0=vF, timer=0.0, rad0=xG,
-                            az0=np.arctan2(A[2], A[0]),
-                            el0=np.arcsin(np.clip(A[1] / xG, -1.0, 1.0)),
-                            head0=zA.copy()
-                        )
-                        xf = "landing"
-                        break
-
-        if xf == "fly":
-            qH = G * BM / (d2 + BS2)
-            xF = zo >= qa
-            vel += ((zl / zo[:, None]) * (qH * xF)[:, None]).sum(axis=0) * dt
-            for i in np.nonzero(~xF)[0]:
-                xp = -zl[i] / max(zo[i], 0.001)
-                vc[0] = BP[i][0] + xp[0] * qa[i]
-                vc[2] = BP[i][2] + xp[2] * qa[i]
-                vel *= 0.85
-            if np.any(zo < HOR):
-                if vN in ("blueprint", "parchment"):
-                    respawn_channel.play(paper_crumple_sfx)
-                    respawn_channel.queue(paper_uncrumple_sfx)
-                else:
-                    respawn_channel.play(paper_uncrumple_sfx)
-                vc[0], vc[2] = xW[0], xW[2]
-                vel[:] = 0.0
-                vU.clear()
-                xe["t"] += 15.0
-                say(T["spaghetti_msg"], 4.0)
-            vc += vel * dt
-            vc[1] = grid_height_at(vc[0], vc[2]) + qp
-    else:
-        zl = BP - vc
-        zl[:, 1] = 0.0
-        zo = np.sqrt((zl * zl).sum(axis=1)) + 1e-6
-        zA = np.array([np.sin(yaw), 0.0, np.cos(yaw)])
-        zZ = pg.key.get_pressed()
-
-    zR = zo[qq]
-    xd = float(zR.min()) if len(zR) else 9999.0
-    zT = float(np.clip(1.0 - (xd - 10.0) / 140.0, 0.0, 1.0))
-    if zC == "play" and vN == "glitch" and zT > 0.0:
-        glitch_channel.set_volume(min(0.65, zT))
-        if not glitch_channel.get_busy():
-            glitch_channel.play(glitch_sfx)
-    else:
-        glitch_channel.stop()
-
-    eps = 0.25
-    zF = grid_height_at(vc[0] + zA[0] * eps, vc[2] + zA[2] * eps)
-    zG = grid_height_at(vc[0] - zA[0] * eps, vc[2] - zA[2] * eps)
-    vi = -np.arctan2(zF - zG, 2.0 * eps)
-    vI = 0.0
-    if zC == "play" and xf == "fly":
-        if zZ[pg.K_a]:
-            vI += 0.45
-        if zZ[pg.K_d]:
-            vI -= 0.45
-    qL += (vI - qL) * min(1.0, 10.0 * dt)
-    _cr, _sr = np.cos(qL), np.sin(qL)
-    _cp, _sp = np.cos(vi), np.sin(vi)
-    _cy, _sy = np.cos(yaw), np.sin(yaw)
-    _ZR = np.array([[_cr, _sr, 0, 0], [-_sr, _cr, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]], dtype=float)
-    _XR = np.array([[1, 0, 0, 0], [0, _cp, _sp, 0], [0, -_sp, _cp, 0], [0, 0, 0, 1]], dtype=float)
-    _YR = np.array([[_cy, 0, -_sy, 0], [0, 1, 0, 0], [_sy, 0, _cy, 0], [0, 0, 0, 1]], dtype=float)
-    FM = _ZR @ _XR @ _YR
-    zw = (FM[0, :3].copy(), FM[1, :3].copy(), FM[2, :3].copy())
-    va = zw
-
-    if xf != "fly":
         if zC == "play":
-            z3["timer"] += dt
-        tm = z3["timer"]
-        i = z3["idx"]
-        b = qU[i]
-        C = BC[i]
-        r = b["radius"]
-        vq = qB * (vF - z3["t0"])
-        az = z3["az0"] - vq
-        zK = rot_y(z3["head0"], vq)
-        vZ = np.array([np.cos(qc) * np.cos(az), np.sin(qc), np.cos(qc) * np.sin(az)])
-        if xf == "landing":
-            e = ease(min(tm / qt, 1.0))
-            el = z3["el0"] + (qc - z3["el0"]) * e
-            rad = z3["rad0"] + (r + 0.05 - z3["rad0"]) * e
-            pos = polar(C, az, el, rad)
-            va = blend_basis(zw, surface_basis(vZ, zK), e)
-            if zC == "play" and tm >= qt:
-                xf, z3["timer"] = "landed", 0.0
-                if zB == "delivery" and xe["target"] is not None and i == xe["target"]:
-                    k = mi
-                    zj += 1
-                    xY += qz
-                    xN.add(i)
-                    reveal_system(b["parent"])
-                    reveal_area(b["pos"][0], b["pos"][2], 450.0)
-                    xW = vc.copy()
-                    mi += 1
-                    new_mission()
-                    vK = f'"{T["fragments"][k]}"'
-                    if xe["target"] is not None:
-                        vK += "\n\n" + T["guild"][k]
-                    push_story(f"DELIVERY {k + 1}/{len(xO)} DONE  -  recipient:", vK, 16.0)
-                    if xe["target"] is None:
-                        zq = "choice"
-                    say(f"DELIVERY {k + 1} DONE - fog lifted, scanners boosted", 4.0)
-                else:
-                    xW = vc.copy()
-                    say(f"Touchdown on {b['name']}" + ("" if zB == "freeroam" else " (no target here)"), 2.5)
-        elif xf == "landed":
-            pos = C + vZ * (r + 0.05)
-            va = surface_basis(vZ, zK)
-            if zC == "play" and tm >= qC:
-                xf, z3["timer"] = "takeoff", 0.0
+            xe["t"] += dt
+            xh = max(0.0, xh - dt)
+            zf -= dt
+            if vx is not None and zq != "choice":
+                vx["t"] -= dt
+                if vx["t"] <= 0:
+                    vx = None
+
+        zN = wells_height(BP[:, 0], BP[:, 2])
+        BC = BP.copy()
+        BC[:, 1] = zN + np.where(qq, 1.5, 1.0 + BRV * 0.4)
+
+        if zC == "play":
+            dxz = np.hypot(BP[:, 0] - vc[0], BP[:, 2] - vc[2])
+            zm |= dxz < xY * np.where(qs, 1.6, 1.0)
+            zt |= np.hypot(qf - vc[0], qg - vc[2]) < xY * 1.2
+            zA = np.array([np.sin(yaw), 0.0, np.cos(yaw)])
+            xQ = np.array([np.cos(yaw), 0.0, -np.sin(yaw)])
+            zZ = pg.key.get_pressed()
+            zl = BP - vc
+            zl[:, 1] = 0.0
+            d2 = (zl * zl).sum(axis=1)
+            zo = np.sqrt(d2) + 1e-6
+
+            if xf == "fly":
+                vP = 22.0
+                if zZ[pg.K_w]:
+                    vel += zA * vP * dt
+                if zZ[pg.K_s]:
+                    vel -= zA * vP * dt
+                if zZ[pg.K_d]:
+                    vel += xQ * vP * dt
+                if zZ[pg.K_a]:
+                    vel -= xQ * vP * dt
+                if zf <= 0:
+                    for i in np.nonzero(qr & (zo < qa + 3.5))[0]:
+                        if np.linalg.norm(vel - qU[i]["vel"]) < qb:
+                            C = BC[i]
+                            A = vc - C
+                            xG = max(float(np.linalg.norm(A)), 1e-4)
+                            z3 = dict(
+                                idx=int(i), t0=vF, timer=0.0, rad0=xG,
+                                az0=np.arctan2(A[2], A[0]),
+                                el0=np.arcsin(np.clip(A[1] / xG, -1.0, 1.0)),
+                                head0=zA.copy()
+                            )
+                            xf = "landing"
+                            break
+
+            if xf == "fly":
+                qH = G * BM / (d2 + BS2)
+                xF = zo >= qa
+                vel += ((zl / zo[:, None]) * (qH * xF)[:, None]).sum(axis=0) * dt
+                for i in np.nonzero(~xF)[0]:
+                    xp = -zl[i] / max(zo[i], 0.001)
+                    vc[0] = BP[i][0] + xp[0] * qa[i]
+                    vc[2] = BP[i][2] + xp[2] * qa[i]
+                    vel *= 0.85
+                if np.any(zo < HOR):
+                    if vN in ("blueprint", "parchment"):
+                        respawn_channel.play(paper_crumple_sfx)
+                        respawn_channel.queue(paper_uncrumple_sfx)
+                    else:
+                        respawn_channel.play(paper_uncrumple_sfx)
+                    vc[0], vc[2] = xW[0], xW[2]
+                    vel[:] = 0.0
+                    vU.clear()
+                    xe["t"] += 15.0
+                    say(T["spaghetti_msg"], 4.0)
+                vc += vel * dt
+                vc[1] = grid_height_at(vc[0], vc[2]) + qp
         else:
-            e = ease(min(tm / qD, 1.0))
-            el = qc * (1 - e)
-            rad = (r + 0.05) + (r * 1.15 + 3.2 - (r + 0.05)) * e
-            pos = polar(C, az, el, rad)
-            pos[1] = (1 - e) * pos[1] + e * (grid_height_at(pos[0], pos[2]) + qp)
-            vY = np.array([np.cos(el) * np.cos(az), np.sin(el), np.cos(el) * np.sin(az)])
-            va = blend_basis(surface_basis(vY, zK), zw, e)
-            if zC == "play" and tm >= qD:
-                vel = b["vel"] + np.array([np.cos(az), 0.0, np.sin(az)]) * 5.0
-                xf, zf = "fly", 4.0
-        vc[:] = pos
+            zl = BP - vc
+            zl[:, 1] = 0.0
+            zo = np.sqrt((zl * zl).sum(axis=1)) + 1e-6
+            zA = np.array([np.sin(yaw), 0.0, np.cos(yaw)])
+            zZ = pg.key.get_pressed()
 
-    q7 = 3.6 if xf == "fly" else 5.2
-    if zC == "play":
-        q5 += (q7 - q5) * min(1.0, 3.0 * dt)
-    q6 = np.array([
-        vc[0] - np.sin(yaw) * np.cos(xA) * q5,
-        vc[1] + np.sin(xA) * q5 + 0.4,
-        vc[2] - np.cos(yaw) * np.cos(xA) * q5
-    ])
-    vk = np.floor(vc[0] / qi) * qi
-    vl = np.floor(vc[2] / qi) * qi
-    v5 = qN.copy()
-    v5[:, 0] += vk
-    v5[:, 2] += vl
-    v5[:, 1] = wells_height(v5[:, 0], v5[:, 2])
-    v3 = v(q6, (xA, yaw, 0))
-    scr.fill(T["bg"])
-    draw_mesh(v5, zE, zV, v3, xE, T["grid"], 1, z8=48.0)
+        zR = zo[qq]
+        xd = float(zR.min()) if len(zR) else 9999.0
+        zT = float(np.clip(1.0 - (xd - 10.0) / 140.0, 0.0, 1.0))
+        if zC == "play" and vN == "glitch" and zT > 0.0:
+            glitch_channel.set_volume(min(0.65, zT))
+            if not glitch_channel.get_busy():
+                glitch_channel.play(glitch_sfx)
+        else:
+            glitch_channel.stop()
 
-    tgt = xe["target"]
-    qx = 52.0
-    for i, b in enumerate(qU):
-        if b["parent"] < 0 or not zm[i]:
-            continue
-        P = qU[b["parent"]]["pos"]
-        R = b["orbit_r"]
-        xL, xM = vc[0] - P[0], vc[2] - P[2]
-        if abs(np.hypot(xL, xM) - R) > qx + 10:
-            continue
-        zI = min(np.pi, (qx + 15) / R)
-        dth = 1.5 / R
-        k0 = int(np.floor(np.arctan2(xM, xL) / dth))
-        kn = int(np.ceil(zI / dth)) + 1
-        qI = np.arange(k0 - kn, k0 + kn + 1) * dth
-        n = len(qI)
-        oxs = P[0] + R * np.cos(qI)
-        ozs = P[2] + R * np.sin(qI)
-        ohs = wells_height(oxs, ozs) + 0.1
-        ov = np.stack([oxs, ohs, ozs, np.ones(n)], axis=1)
-        oe = np.stack([np.arange(n - 1), np.arange(1, n)], axis=1)
-        zW = (i == tgt)
-        qO = themed_body_color(b)
-        bg = T["bg"]
-        col = T["accent"] if zW else tuple(int(bg[c] + (qO[c] - bg[c]) * 0.85) for c in range(3))
-        draw_mesh(ov, oe, zV, v3, xE, col, 2, 48.0)
+        eps = 0.25
+        zF = grid_height_at(vc[0] + zA[0] * eps, vc[2] + zA[2] * eps)
+        zG = grid_height_at(vc[0] - zA[0] * eps, vc[2] - zA[2] * eps)
+        vi = -np.arctan2(zF - zG, 2.0 * eps)
+        vI = 0.0
+        if zC == "play" and xf == "fly":
+            if zZ[pg.K_a]:
+                vI += 0.45
+            if zZ[pg.K_d]:
+                vI -= 0.45
+        qL += (vI - qL) * min(1.0, 10.0 * dt)
+        _cr, _sr = np.cos(qL), np.sin(qL)
+        _cp, _sp = np.cos(vi), np.sin(vi)
+        _cy, _sy = np.cos(yaw), np.sin(yaw)
+        _ZR = np.array([[_cr, _sr, 0, 0], [-_sr, _cr, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]], dtype=float)
+        _XR = np.array([[1, 0, 0, 0], [0, _cp, _sp, 0], [0, -_sp, _cp, 0], [0, 0, 0, 1]], dtype=float)
+        _YR = np.array([[_cy, 0, -_sy, 0], [0, 1, 0, 0], [_sy, 0, _cy, 0], [0, 0, 0, 1]], dtype=float)
+        FM = _ZR @ _XR @ _YR
+        zw = (FM[0, :3].copy(), FM[1, :3].copy(), FM[2, :3].copy())
+        va = zw
 
-    for i in np.nonzero((zo < 650.0) & zm)[0]:
-        b = qU[i]
-        r = b["radius"]
-        C = BC[i]
-        qO = themed_body_color(b)
-        if b["kind"] == "hole":
-            draw_mesh(vp, vo, m(C, (0, 0, 0), (r, r, r)), v3, xE, qO, 2, 600.0)
-            xR = (T["hole_ring1"], T["hole_ring2"])
-            for k, sc in enumerate((2.4, 3.4)):
-                draw_mesh(
-                    xT, xS, m(C, (0.25, vF * (1.5 - k), 0), (r * sc, r * sc, r * sc)),
-                    v3, xE, xR[k], 2, 600.0
-                )
-        elif b["kind"] == "star":
-            draw_mesh(vp, vo, m(C, (0, vF * qB, 0), (r, r, r)), v3, xE, qO, 2, 800.0)
+        if xf != "fly":
+            if zC == "play":
+                z3["timer"] += dt
+            tm = z3["timer"]
+            i = z3["idx"]
+            b = qU[i]
+            C = BC[i]
+            r = b["radius"]
+            vq = qB * (vF - z3["t0"])
+            az = z3["az0"] - vq
+            zK = rot_y(z3["head0"], vq)
+            vZ = np.array([np.cos(qc) * np.cos(az), np.sin(qc), np.cos(qc) * np.sin(az)])
+            if xf == "landing":
+                e = ease(min(tm / qt, 1.0))
+                el = z3["el0"] + (qc - z3["el0"]) * e
+                rad = z3["rad0"] + (r + 0.05 - z3["rad0"]) * e
+                pos = polar(C, az, el, rad)
+                va = blend_basis(zw, surface_basis(vZ, zK), e)
+                if zC == "play" and tm >= qt:
+                    xf, z3["timer"] = "landed", 0.0
+                    if zB == "delivery" and xe["target"] is not None and i == xe["target"]:
+                        k = mi
+                        zj += 1
+                        xY += qz
+                        xN.add(i)
+                        reveal_system(b["parent"])
+                        reveal_area(b["pos"][0], b["pos"][2], 450.0)
+                        xW = vc.copy()
+                        mi += 1
+                        new_mission()
+                        vK = f'"{T["fragments"][k]}"'
+                        if xe["target"] is not None:
+                            vK += "\n\n" + T["guild"][k]
+                        push_story(f"DELIVERY {k + 1}/{len(xO)} DONE  -  recipient:", vK, 16.0)
+                        if xe["target"] is None:
+                            zq = "choice"
+                        say(f"DELIVERY {k + 1} DONE - fog lifted, scanners boosted", 4.0)
+                    else:
+                        xW = vc.copy()
+                        say(f"Touchdown on {b['name']}" + ("" if zB == "freeroam" else " (no target here)"), 2.5)
+            elif xf == "landed":
+                pos = C + vZ * (r + 0.05)
+                va = surface_basis(vZ, zK)
+                if zC == "play" and tm >= qC:
+                    xf, z3["timer"] = "takeoff", 0.0
+            else:
+                e = ease(min(tm / qD, 1.0))
+                el = qc * (1 - e)
+                rad = (r + 0.05) + (r * 1.15 + 3.2 - (r + 0.05)) * e
+                pos = polar(C, az, el, rad)
+                pos[1] = (1 - e) * pos[1] + e * (grid_height_at(pos[0], pos[2]) + qp)
+                vY = np.array([np.cos(el) * np.cos(az), np.sin(el), np.cos(el) * np.sin(az)])
+                va = blend_basis(surface_basis(vY, zK), zw, e)
+                if zC == "play" and tm >= qD:
+                    vel = b["vel"] + np.array([np.cos(az), 0.0, np.sin(az)]) * 5.0
+                    xf, zf = "fly", 4.0
+            vc[:] = pos
+
+        q7 = 3.6 if xf == "fly" else 5.2
+        if zC == "play":
+            q5 += (q7 - q5) * min(1.0, 3.0 * dt)
+        q6 = np.array([
+            vc[0] - np.sin(yaw) * np.cos(xA) * q5,
+            vc[1] + np.sin(xA) * q5 + 0.4,
+            vc[2] - np.cos(yaw) * np.cos(xA) * q5
+        ])
+        vk = np.floor(vc[0] / qi) * qi
+        vl = np.floor(vc[2] / qi) * qi
+        v5 = qN.copy()
+        v5[:, 0] += vk
+        v5[:, 2] += vl
+        v5[:, 1] = wells_height(v5[:, 0], v5[:, 2])
+        v3 = v(q6, (xA, yaw, 0))
+        scr.fill(T["bg"])
+        draw_mesh(v5, zE, zV, v3, xE, T["grid"], 1, z8=48.0)
+
+        tgt = xe["target"]
+        qx = 52.0
+        for i, b in enumerate(qU):
+            if b["parent"] < 0 or not zm[i]:
+                continue
+            P = qU[b["parent"]]["pos"]
+            R = b["orbit_r"]
+            xL, xM = vc[0] - P[0], vc[2] - P[2]
+            if abs(np.hypot(xL, xM) - R) > qx + 10:
+                continue
+            zI = min(np.pi, (qx + 15) / R)
+            dth = 1.5 / R
+            k0 = int(np.floor(np.arctan2(xM, xL) / dth))
+            kn = int(np.ceil(zI / dth)) + 1
+            qI = np.arange(k0 - kn, k0 + kn + 1) * dth
+            n = len(qI)
+            oxs = P[0] + R * np.cos(qI)
+            ozs = P[2] + R * np.sin(qI)
+            ohs = wells_height(oxs, ozs) + 0.1
+            ov = np.stack([oxs, ohs, ozs, np.ones(n)], axis=1)
+            oe = np.stack([np.arange(n - 1), np.arange(1, n)], axis=1)
+            zW = (i == tgt)
+            qO = themed_body_color(b)
             bg = T["bg"]
-            dim = tuple(int(bg[c] + (qO[c] - bg[c]) * 0.45) for c in range(3))
-            draw_mesh(
-                vp, vo, m(C, (0, -vF * 0.2, 0.3), (r * 1.3, r * 1.3, r * 1.3)),
-                v3, xE, dim, 1, 800.0
-            )
-        else:
-            xy = T["accent2"] if i in xN else qO
-            draw_mesh(vp, vo, m(C, (0, vF * qB, 0), (r, r, r)), v3, xE, xy, 2, 600.0)
-            if b.get("ring"):
-                bg = T["bg"]
-                xI = tuple(int(bg[c] + (qO[c] - bg[c]) * 0.7) for c in range(3))
-                draw_mesh(
-                    xT, xS, m(C, (0.35, 0, 0.25), (r * 1.8, r * 1.8, r * 1.8)),
-                    v3, xE, xI, 1, 600.0
-                )
-            if zB == "delivery" and b.get("relay") and i not in xN:
-                top = C + np.array([0.0, r + 3.0, 0.0])
-                draw_mesh(
-                    xt, xr, m(top, (0, vF, 0), (0.5, 1.2, 0.5)),
-                    v3, xE, T["relay_beacon"], 1, 600.0
-                )
+            col = T["accent"] if zW else tuple(int(bg[c] + (qO[c] - bg[c]) * 0.85) for c in range(3))
+            draw_mesh(ov, oe, zV, v3, xE, col, 2, 48.0)
 
-    if tgt is not None and zm[tgt]:
-        tb_ = qU[tgt]
-        vT = BC[tgt].copy()
-        vT[1] += tb_["radius"] + 2.5 + np.sin(vF * 2) * 0.3
+        for i in np.nonzero((zo < 650.0) & zm)[0]:
+            b = qU[i]
+            r = b["radius"]
+            C = BC[i]
+            qO = themed_body_color(b)
+            if b["kind"] == "hole":
+                draw_mesh(vp, vo, m(C, (0, 0, 0), (r, r, r)), v3, xE, qO, 2, 600.0)
+                xR = (T["hole_ring1"], T["hole_ring2"])
+                for k, sc in enumerate((2.4, 3.4)):
+                    draw_mesh(
+                        xT, xS, m(C, (0.25, vF * (1.5 - k), 0), (r * sc, r * sc, r * sc)),
+                        v3, xE, xR[k], 2, 600.0
+                    )
+            elif b["kind"] == "star":
+                draw_mesh(vp, vo, m(C, (0, vF * qB, 0), (r, r, r)), v3, xE, qO, 2, 800.0)
+                bg = T["bg"]
+                dim = tuple(int(bg[c] + (qO[c] - bg[c]) * 0.45) for c in range(3))
+                draw_mesh(
+                    vp, vo, m(C, (0, -vF * 0.2, 0.3), (r * 1.3, r * 1.3, r * 1.3)),
+                    v3, xE, dim, 1, 800.0
+                )
+            else:
+                xy = T["accent2"] if i in xN else qO
+                draw_mesh(vp, vo, m(C, (0, vF * qB, 0), (r, r, r)), v3, xE, xy, 2, 600.0)
+                if b.get("ring"):
+                    bg = T["bg"]
+                    xI = tuple(int(bg[c] + (qO[c] - bg[c]) * 0.7) for c in range(3))
+                    draw_mesh(
+                        xT, xS, m(C, (0.35, 0, 0.25), (r * 1.8, r * 1.8, r * 1.8)),
+                        v3, xE, xI, 1, 600.0
+                    )
+                if zB == "delivery" and b.get("relay") and i not in xN:
+                    top = C + np.array([0.0, r + 3.0, 0.0])
+                    draw_mesh(
+                        xt, xr, m(top, (0, vF, 0), (0.5, 1.2, 0.5)),
+                        v3, xE, T["relay_beacon"], 1, 600.0
+                    )
+
+        if tgt is not None and zm[tgt]:
+            tb_ = qU[tgt]
+            vT = BC[tgt].copy()
+            vT[1] += tb_["radius"] + 2.5 + np.sin(vF * 2) * 0.3
+            draw_mesh(
+                xt, xr, m(vT, (0, vF * 1.2, 0), (0.9, 0.9, 0.9)),
+                v3, xE, T["accent"], 2, 800.0
+            )
+
+        if zC == "play":
+            vW += dt
+            if vW >= 0.03:
+                if xf == "fly":
+                    vU.append([vc[0], vc[1], vc[2], 1.0])
+                elif vU:
+                    vU.pop(0)
+                if len(vU) > 60:
+                    vU.pop(0)
+                vW = 0.0
+
+        if len(vU) > 1:
+            pts = np.array(vU)
+            zc = pts @ v3 @ xE
+            qQ = np.array(T["bg"], dtype=float)
+            vV = np.array(T["trail"], dtype=float)
+            xq = len(pts) - 1
+            for i in range(xq):
+                q1, q2 = zc[i], zc[i + 1]
+                if q1[3] >= 0.1 and q2[3] >= 0.1:
+                    n1 = q1[:2] / q1[3]
+                    n2 = q2[:2] / q2[3]
+                    x1, y1 = (n1[0] + 1) * 0.5 * wid, (1 - n1[1]) * 0.5 * hig
+                    x2, y2 = (n2[0] + 1) * 0.5 * wid, (1 - n2[1]) * 0.5 * hig
+                    if max(abs(x1), abs(x2), abs(y1), abs(y2)) > 1e5:
+                        continue
+                    zu = (i + 1) / xq
+                    col = tuple((qQ + (vV - qQ) * (zu ** 1.5)).astype(int).tolist())
+                    ln = max(np.hypot(x2 - x1, y2 - y1), 1e-6)
+                    nx_, ny_ = -(y2 - y1) / ln * 0.5, (x2 - x1) / ln * 0.5
+                    pg.draw.aaline(scr, col, (x1 + nx_, y1 + ny_), (x2 + nx_, y2 + ny_))
+                    pg.draw.aaline(scr, col, (x1 - nx_, y1 - ny_), (x2 - nx_, y2 - ny_))
+
         draw_mesh(
-            xt, xr, m(vT, (0, vF * 1.2, 0), (0.9, 0.9, 0.9)),
-            v3, xE, T["accent"], 2, 800.0
+            vd, vb, basis_matrix(va, vc, qA), v3, xE,
+            T["ship"], 2, z8=50.0
         )
 
-    if zC == "play":
-        vW += dt
-        if vW >= 0.03:
-            if xf == "fly":
-                vU.append([vc[0], vc[1], vc[2], 1.0])
-            elif vU:
-                vU.pop(0)
-            if len(vU) > 60:
-                vU.pop(0)
-            vW = 0.0
-
-    if len(vU) > 1:
-        pts = np.array(vU)
-        zc = pts @ v3 @ xE
-        qQ = np.array(T["bg"], dtype=float)
-        vV = np.array(T["trail"], dtype=float)
-        xq = len(pts) - 1
-        for i in range(xq):
-            q1, q2 = zc[i], zc[i + 1]
-            if q1[3] >= 0.1 and q2[3] >= 0.1:
-                n1 = q1[:2] / q1[3]
-                n2 = q2[:2] / q2[3]
-                x1, y1 = (n1[0] + 1) * 0.5 * wid, (1 - n1[1]) * 0.5 * hig
-                x2, y2 = (n2[0] + 1) * 0.5 * wid, (1 - n2[1]) * 0.5 * hig
-                if max(abs(x1), abs(x2), abs(y1), abs(y2)) > 1e5:
-                    continue
-                zu = (i + 1) / xq
-                col = tuple((qQ + (vV - qQ) * (zu ** 1.5)).astype(int).tolist())
-                ln = max(np.hypot(x2 - x1, y2 - y1), 1e-6)
-                nx_, ny_ = -(y2 - y1) / ln * 0.5, (x2 - x1) / ln * 0.5
-                pg.draw.aaline(scr, col, (x1 + nx_, y1 + ny_), (x2 + nx_, y2 + ny_))
-                pg.draw.aaline(scr, col, (x1 - nx_, y1 - ny_), (x2 - nx_, y2 - ny_))
-
-    draw_mesh(
-        vd, vb, basis_matrix(va, vc, qA), v3, xE,
-        T["ship"], 2, z8=50.0
-    )
-
-    if zC != "menu":
-        vn = np.linalg.norm(vel) if xf == "fly" else 0.0
-        scr.blit(fnt.render(
-            f"SPEED: {vn:05.2f} u/s | POS: ({vc[0]:.0f}, {vc[2]:.0f}) | SCAN: {xY:.0f}",
-            True, T["text"]
-        ), (16, 16))
-        if zB == "freeroam":
-            scr.blit(fnt.render("MODE: FREE ROAM (RANDOM MAP)", True, T["accent2"]), (16, 38))
-            scr.blit(fnt.render("[ESC] menu  [T] theme  [R] new map  [TAB] log", True, T["text_dim"]), (16, 60))
-        elif tgt is not None:
-            tb = qU[tgt]
-            z0 = bool(zm[tgt])
-            aim = tb["pos"] if z0 else qU[tb["parent"]]["pos"]
-            vJ = np.hypot(aim[0] - vc[0], aim[2] - vc[2])
-            xK = np.linalg.norm(vel - tb["vel"]) if (xf == "fly" and z0) else 0.0
-            z2 = tb["name"] if z0 else f"unknown {T['planet_word']} (follow arrow)"
+        if zC != "menu":
+            vn = np.linalg.norm(vel) if xf == "fly" else 0.0
             scr.blit(fnt.render(
-                f"DELIVERY {mi + 1}/{len(xO)}: {xe['cargo']}  ->  {z2}",
-                True, T["accent"]
-            ), (16, 38))
-            vv = {"fly": "", "landing": "   << LANDING", "landed": "   << LANDED", "takeoff": "   << TAKEOFF"}[xf]
-            if xf == "fly" and z0 and vJ < tb["radius"] * 1.15 + 3.5 + 8:
-                vv = "   << SLOW DOWN TO LAND"
-            scr.blit(fnt.render(
-                f"DIST: {vJ:6.0f}{'' if z0 else ' (approx)'}   REL SPEED: {xK:4.1f} (land < {qb:.0f})   TIME: {xe['t']:5.0f}s{vv}",
+                f"SPEED: {vn:05.2f} u/s | POS: ({vc[0]:.0f}, {vc[2]:.0f}) | SCAN: {xY:.0f}",
                 True, T["text"]
-            ), (16, 60))
-            draw_arrow(aim[0], aim[2])
-            scr.blit(fnt.render(
-                f"DELIVERED: {zj}/{len(xO)}   [ESC] pause  [T] theme  [TAB] log  [R] restart",
-                True, T["text_dim"]
-            ), (16, 82))
-        else:
-            scr.blit(fnt.render(
-                "NO ORDERS - FREE FLIGHT" if zq != "choice" else "FINAL RECIPIENT WAITING",
-                True, T["accent"]
-            ), (16, 38))
-            scr.blit(fnt.render(
-                f"DELIVERED: {zj}/{len(xO)}   [ESC] pause  [T] theme  [TAB] log  [R] restart",
-                True, T["text_dim"]
-            ), (16, 60))
+            ), (16, 16))
+            if zB == "freeroam":
+                scr.blit(fnt.render("MODE: FREE ROAM (RANDOM MAP)", True, T["accent2"]), (16, 38))
+                scr.blit(fnt.render("[ESC] menu  [T] theme  [R] new map  [TAB] log", True, T["text_dim"]), (16, 60))
+            elif tgt is not None:
+                tb = qU[tgt]
+                z0 = bool(zm[tgt])
+                aim = tb["pos"] if z0 else qU[tb["parent"]]["pos"]
+                vJ = np.hypot(aim[0] - vc[0], aim[2] - vc[2])
+                xK = np.linalg.norm(vel - tb["vel"]) if (xf == "fly" and z0) else 0.0
+                z2 = tb["name"] if z0 else f"unknown {T['planet_word']} (follow arrow)"
+                scr.blit(fnt.render(
+                    f"DELIVERY {mi + 1}/{len(xO)}: {xe['cargo']}  ->  {z2}",
+                    True, T["accent"]
+                ), (16, 38))
+                vv = {"fly": "", "landing": "   << LANDING", "landed": "   << LANDED", "takeoff": "   << TAKEOFF"}[xf]
+                if xf == "fly" and z0 and vJ < tb["radius"] * 1.15 + 3.5 + 8:
+                    vv = "   << SLOW DOWN TO LAND"
+                scr.blit(fnt.render(
+                    f"DIST: {vJ:6.0f}{'' if z0 else ' (approx)'}   REL SPEED: {xK:4.1f} (land < {qb:.0f})   TIME: {xe['t']:5.0f}s{vv}",
+                    True, T["text"]
+                ), (16, 60))
+                draw_arrow(aim[0], aim[2])
+                scr.blit(fnt.render(
+                    f"DELIVERED: {zj}/{len(xO)}   [ESC] pause  [T] theme  [TAB] log  [R] restart",
+                    True, T["text_dim"]
+                ), (16, 82))
+            else:
+                scr.blit(fnt.render(
+                    "NO ORDERS - FREE FLIGHT" if zq != "choice" else "FINAL RECIPIENT WAITING",
+                    True, T["accent"]
+                ), (16, 38))
+                scr.blit(fnt.render(
+                    f"DELIVERED: {zj}/{len(xO)}   [ESC] pause  [T] theme  [TAB] log  [R] restart",
+                    True, T["text_dim"]
+                ), (16, 60))
 
-    draw_minimap()
-    if xh > 0:
-        s_ = qT.render(msg, True, T["warn"])
-        scr.blit(s_, ((wid - s_.get_width()) // 2, 110))
-    if zC == "play":
-        if ve and log:
-            draw_panel("LOG  [TAB to close]", "\n\n".join(f"{t}: {x}" for t, x in log[-3:]), T["warn"])
-        elif zq == "choice":
-            draw_panel(T["choice_title"], T["choice_txt"], T["warn"])
-        elif vx is not None:
-            draw_panel(vx["title"], vx["text"])
+        draw_minimap()
+        if xh > 0:
+            s_ = qT.render(msg, True, T["warn"])
+            scr.blit(s_, ((wid - s_.get_width()) // 2, 110))
+        if zC == "play":
+            if ve and log:
+                draw_panel("LOG  [TAB to close]", "\n\n".join(f"{t}: {x}" for t, x in log[-3:]), T["warn"])
+            elif zq == "choice":
+                draw_panel(T["choice_title"], T["choice_txt"], T["warn"])
+            elif vx is not None:
+                draw_panel(vx["title"], vx["text"])
 
-    apply_glitch_fx(zT)
+        apply_glitch_fx(zT)
 
-    if zC in ("menu", "paused"):
-        q4 = draw_menu_overlay()
+        if zC in ("menu", "paused"):
+            q4 = draw_menu_overlay()
 
-    if vA:
-        scr.blit(vz, (0, 0))
-        if int(vF * 2) % 2 == 0:
-            qF = fnt.render("[ PRESS ENTER / SPACE OR CLICK TO START ]", True, (220, 220, 220))
-            scr.blit(qF, ((wid - qF.get_width()) // 2, hig - 36))
+        if vA:
+            scr.blit(vz, (0, 0))
+            if int(vF * 2) % 2 == 0:
+                qF = fnt.render("[ PRESS ENTER / SPACE OR CLICK TO START ]", True, (220, 220, 220))
+                scr.blit(qF, ((wid - qF.get_width()) // 2, hig - 36))
 
-    pg.display.flip()
+        pg.display.flip()
+        await asyncio.sleep(0)
 
-pg.quit() 
+    pg.quit()
+
+
+if __name__ == "__main__":
+    asyncio.run(main())
